@@ -2,7 +2,7 @@
 	"name": "open-remote-ssh-copy",
 	"displayName": "Open Remote - SSH",
 	"description": "Use any remote machine with a SSH server as your development environment.",
-	"version": "0.2.2",
+	"version": "0.3.2",
 	"publisher": "ai-nikolai",
 	"repository": {
 		"type": "git",
@@ -68,8 +68,8 @@
 		"@types/webpack": "5.28.5",
 		"@typescript-eslint/eslint-plugin": "8.65.0",
 		"@typescript-eslint/parser": "8.65.0",
-		"@vitest/coverage-v8": "4.1.10",
-		"@vitest/ui": "4.1.10",
+		"@vitest/coverage-v8": "^4.1.11",
+		"@vitest/ui": "^4.1.11",
 		"@vscode/vsce": "3.9.2",
 		"@zokugun/fs-extra-plus": "0.5.0",
 		"@zokugun/xtry": "0.11.6",
@@ -87,7 +87,7 @@
 		"typescript": "5.9.3",
 		"typescript-eslint": "8.65.0",
 		"universalify": "2.0.1",
-		"vitest": "4.1.10",
+		"vitest": "^4.1.11",
 		"webpack": "5.109.0",
 		"webpack-cli": "7.2.1",
 		"yaml": "2.9.0"
@@ -200,15 +200,24 @@
 				}
 			}
 		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "sshExplorer",
+					"title": "SSH Explorer",
+					"icon": "./resources/icon.png"
+				}
+			]
+		},
 		"views": {
-			"remote": [
+			"sshExplorer": [
 				{
 					"id": "sshHosts",
 					"name": "SSH Targets",
 					"group": "targets@1",
 					"remoteName": "ssh-remote"
 				}
-			]
+			]	
 		},
 		"commands": [
 			{

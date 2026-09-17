@@ -1,10 +1,30 @@
+## 0.3.2
+- Added Seperate icon on activity bar (as remote icon is not displaying)
+
+## 0.3.1 (from upstream)
+
+- fix(windows): use improved command to test archive (#331)
+
+## 0.3.0 (from upstream)
+
+- feat: list configured SSH hosts in the Connect to Host prompt (#319)
+- feat: support `ForwardAgent` (#310)
+- feat: support PEM-encoded password-protected ssh keys (#249)
+- feat: add tests (#314)
+- enhance: add integrity check of the archive (#323)
+- enhance: fall back to private key when .pub file parsing fails (#268)
+- feat: use official simple-socks (#324)
+- fix(alpine): pass flock and expose error on missing libstdc++ (#315)
+- fix: sanitize the extension ids (#321)
+- fix(macos): use a fixed file descriptor due to bash3 (#326)
+
 ## 0.2.2 
 - enhance: readme updated to reflect the new package
 
 ## 0.2.1
 - feat: MFA authentication via jump host works well
 
-## 0.2.0 (branched-off-from here)
+## 0.2.0 (branched-off from upstream)
 - feat: add compatibility with Code-OSS (#189)
 - remodel: use base64 encoding for install script to support csh/tcsh login shells (#296)
 - enhance(linux): use `flock` to prevent multiple server install scripts running in parallel (#285)
