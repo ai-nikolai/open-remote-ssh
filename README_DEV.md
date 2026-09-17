@@ -28,3 +28,7 @@ codium --install-extension ./open-remote-ssh-copy-0.3.2.vsix
 ```
 
 ## Potentially publishing the package on open-vsx.org
+
+Upload .vsix file: `https://open-vsx.org/user-settings/extensions`
+
+Current extension: `https://open-vsx.org/user-settings/extensions/ai-nikolai/open-remote-ssh-copy`
