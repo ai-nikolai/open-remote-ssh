@@ -32,3 +32,15 @@ codium --install-extension ./open-remote-ssh-copy-0.3.3.vsix
 Upload .vsix file: `https://open-vsx.org/user-settings/extensions`
 
 Current extension: `https://open-vsx.org/user-settings/extensions/ai-nikolai/open-remote-ssh-copy`
+
+
+or: via terminal
+1. Install once
+```bash
+npm install -g ovsx
+```
+2. Then run
+```bash
+export CODIUM_API=""
+ovsx publish open-remote-ssh-copy-0.3.3.vsix -p $CODIUM_API
+```
