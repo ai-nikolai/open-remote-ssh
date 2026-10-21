@@ -13,3 +13,9 @@
 /coverage/
 /**/*.js
 /**/*.js.map
+
+
+.mini
+
+CURRENT_GOAL.md
+CURRENT_PLAN.md
