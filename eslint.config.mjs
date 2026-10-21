@@ -78,7 +78,7 @@ export default defineConfig(
                 'warn',
                 'single',
                 {
-                    allowTemplateLiterals: true,
+                    allowTemplateLiterals: 'always',
                 }
             ],
         },

@@ -24,7 +24,7 @@ vsce package
 
 3. Install locally to test:
 ```bash
-codium --install-extension ./open-remote-ssh-copy-0.3.2.vsix
+codium --install-extension ./open-remote-ssh-copy-0.3.3.vsix
 ```
 
 ## Potentially publishing the package on open-vsx.org

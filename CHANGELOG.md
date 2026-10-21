@@ -1,3 +1,33 @@
+## 0.3.3
+
+- fix: the `SSH Targets` explorer view no longer shows
+  "There is no data provider registered that can provide view data" on recent VSCodium/VS Code
+  builds. Activation used to abort when the `resolvers` proposed API was denied, so the view never
+  got a data provider. The view and the commands are now registered before the resolver registration
+  and a denied proposal is reported instead of breaking the whole extension, which keeps the host
+  list usable.
+- feat: new command `Remote-SSH: Enable Proposed API Support` that allow-lists the extension in
+  `argv.json` (`enable-proposed-api`) and offers to open that file. Proposed APIs are only granted to
+  allow-listed extensions in current VS Code/VSCodium builds, so remote connections need this entry.
+- fix: `Remote-SSH: Enable Proposed API Support` no longer mistakes a commented out
+  `// "enable-proposed-api": [...]` line in `argv.json` for an active entry. The file is parsed
+  comment-aware, so the entry is really added and connections work after the restart. Writing is
+  refused (instead of corrupting the file) when the existing value is not an array.
+- fix: the `argv.json` entry is written for the id of the running extension
+  (`context.extension.id`) instead of a hard-coded one.
+- fix: dropped the unused `contribViewsRemote` proposal and the `remoteName` property of the view -
+  the view lives in its own activity bar container, so it can be hidden/moved again and needs one
+  proposed API less.
+- fix: an unreadable or malformed SSH configuration is now reported inside the view instead of
+  breaking it.
+- docs: README reworked around the `argv.json` step - what the file is, why the proposed API has to
+  be allow-listed, how to do it, and the `--enable-proposed-api` command line alternative.
+- build: fixed the lint setup: removed the obsolete `.eslintignore` (ESLint 9+ ignores it, the same
+  paths are configured in `eslint.config.mjs`), replaced the deprecated boolean
+  `allowTemplateLiterals` with `"always"`, and dropped `npm audit` from the `lint-staged` pre-commit
+  hook so dev-dependency advisories no longer block every commit (it still runs in
+  `npm run lint:all` and CI).
+
 ## 0.3.2
 - Added Seperate icon on activity bar (as remote icon is not displaying)
 

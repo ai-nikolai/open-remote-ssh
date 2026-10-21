@@ -2,7 +2,7 @@
 	"name": "open-remote-ssh-copy",
 	"displayName": "Open Remote - SSH",
 	"description": "Use any remote machine with a SSH server as your development environment.",
-	"version": "0.3.2",
+	"version": "0.3.3",
 	"publisher": "ai-nikolai",
 	"repository": {
 		"type": "git",
@@ -97,6 +97,7 @@
 		"onCommand:openremotessh.openEmptyWindowInCurrentWindow",
 		"onCommand:openremotessh.openConfigFile",
 		"onCommand:openremotessh.showLog",
+		"onCommand:openremotessh.enableProposedApi",
 		"onResolveRemoteAuthority:ssh-remote",
 		"onView:sshHosts"
 	],
@@ -214,10 +215,9 @@
 				{
 					"id": "sshHosts",
 					"name": "SSH Targets",
-					"group": "targets@1",
-					"remoteName": "ssh-remote"
+					"group": "targets@1"
 				}
-			]	
+			]
 		},
 		"commands": [
 			{
@@ -238,6 +238,11 @@
 			{
 				"command": "openremotessh.showLog",
 				"title": "Show Log",
+				"category": "Remote-SSH"
+			},
+			{
+				"command": "openremotessh.enableProposedApi",
+				"title": "Enable Proposed API Support (needed for connecting to hosts)",
 				"category": "Remote-SSH"
 			},
 			{
@@ -462,8 +467,7 @@
 	],
 	"api": "none",
 	"enabledApiProposals": [
-		"resolvers",
-		"contribViewsRemote"
+		"resolvers"
 	],
 	"extensionKind": [
 		"ui"
