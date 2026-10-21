@@ -34,10 +34,11 @@ Change it around for the authentication method you actually use, i.e. replace
 
 1. **Install** the extension from Open VSX (or
    `codium --install-extension ai-nikolai.open-remote-ssh-copy`) and restart VSCodium.
-2. **Allow the proposed API** - this is required before you can connect to a host. The easiest way is
-   to run the command `Remote-SSH: Enable Proposed API Support` and to restart VSCodium when it asks
-   you to. See [Why do I have to edit `argv.json`?](#why-do-i-have-to-edit-argvjson) for the manual
-   route and the reasoning behind it.
+2. **Allow the proposed API** - this is required before you can connect to a host. Run the command
+   `Remote-SSH: Enable Proposed API Support` and restart the editor when it asks you to. On VSCodium
+   the command writes the entry to VSCodium's *user* `product.json`, everywhere else to `argv.json`.
+   See [Why do I have to allow a proposed API?](#why-do-i-have-to-allow-a-proposed-api) for the
+   manual route and the reasoning behind it.
 3. **Open the _SSH Explorer_ icon** in the activity bar. The `SSH Targets` view lists every host of
    your `~/.ssh/config` (nested `Include`s and multi-name `Host` lines included):
    - click a host to connect in a new window,
@@ -49,13 +50,44 @@ Change it around for the authentication method you actually use, i.e. replace
 
 If something goes wrong, `Remote-SSH: Show Log` opens the extension log.
 
-## Why do I have to edit `argv.json`?
+## Why do I have to allow a proposed API?
 
 Connecting to a host is implemented with the **proposed** `resolvers` API
 (`vscode.workspace.registerRemoteAuthorityResolver`). Proposed APIs are unstable, so they are never
-handed to a third-party extension unless you allow it explicitly: current VS Code / VSCodium builds
-only grant them to the extensions allow-listed in the application's own `product.json`, and this
-fork is not on that list. The extension therefore has to be allow-listed by you, once:
+handed to a third-party extension unless the user allows it explicitly: current VS Code / VSCodium
+builds only grant them to the extensions allow-listed in the application's own `product.json`, and
+this fork is deliberately a separate extension, so it has to be allow-listed once. There are two
+places for that entry, and `Remote-SSH: Enable Proposed API Support` picks the right one for you.
+
+Both files are **only read when the application starts**, so reloading the window is not enough:
+quit the editor completely and start it again.
+
+### VSCodium: the user `product.json` (preferred)
+
+VSCodium patches VS Code to merge a `product.json` from your user data folder over its own - and
+that is exactly the file holding the allow-list:
+
+| Platform | File |
+| --- | --- |
+| macOS | `~/Library/Application Support/VSCodium/product.json` |
+| Linux | `${XDG_CONFIG_HOME:-~/.config}/VSCodium/product.json` |
+| Windows | `%APPDATA%\VSCodium\product.json` |
+
+```json
+{
+    "extensionEnabledApiProposals": {
+        "ai-nikolai.open-remote-ssh-copy": ["resolvers"]
+    }
+}
+```
+
+This is the cheapest route: the file belongs to you, not to the application bundle, so nothing has to
+be re-signed and nothing is lost on a VSCodium update. Entries are merged per key, so the allow-list
+VSCodium ships stays intact. Two caveats: the file must be plain JSON (VSCodium `require()`s it, so
+comments make it unloadable), and this merge only exists in VSCodium - stock VS Code and other forks
+ignore the file, which is why `argv.json` remains supported.
+
+### Any editor: `argv.json`
 
 ```json
 {
@@ -66,13 +98,10 @@ fork is not on that list. The extension therefore has to be allow-listed by you,
 ```
 
 The file is `argv.json` in your user data folder - `~/.vscode-oss/argv.json` for VSCodium - and you
-can open it with the `Preferences: Configure Runtime Arguments` command. It is **only read when the
-application starts**, so reloading the window is not enough: quit VSCodium completely and start it
-again.
-
-`Remote-SSH: Enable Proposed API Support` performs this edit for you and leaves the comments and the
-rest of your `argv.json` untouched. As an alternative you can allow-list the extension for a single
-launch on the command line: `codium --enable-proposed-api=ai-nikolai.open-remote-ssh-copy`.
+can open it with the `Preferences: Configure Runtime Arguments` command. `Remote-SSH: Enable
+Proposed API Support` leaves the comments and the rest of that file untouched. Alternatively you can
+allow-list the extension for a single launch on the command line:
+`codium --enable-proposed-api=ai-nikolai.open-remote-ssh-copy`.
 
 Without the entry the `SSH Targets` view and the commands keep working - you just cannot connect, and
 the log says
@@ -80,6 +109,15 @@ the log says
 
 > **Further reading**: upstream VS Code documents proposed APIs and this allow-list in
 > [Using Proposed API](https://code.visualstudio.com/api/advanced-topics/using-proposed-api#sharing-extensions-using-the-proposed-api).
+
+## Relationship to `jeanp413/open-remote-ssh`
+
+This extension is an independent fork and is published on its own. It is **not** a contribution back
+to the upstream project, and changes are not sent there.
+
+Both extensions register the same remote authority (`ssh-remote`), so they replace each other: install
+only one of them. If you switch, remove the other one first so the two do not fight over the
+authority (and over their allow-list entries).
 
 ## SSH Host Requirements
 You can connect to a running SSH server on the following platforms.
@@ -162,3 +200,9 @@ Before 1.99.0, the old scheme needs to be used:
 ```
 "remote.SSH.serverDownloadUrlTemplate": "https://github.com/VSCodium/vscodium/releases/download/${version}.${release}/vscodium-reh-${os}-${arch}-${version}.${release}.tar.gz",
 ```
+
+## License
+
+MIT - see [LICENSE.txt](LICENSE.txt). This extension is derived from
+[jeanp413/open-remote-ssh](https://github.com/jeanp413/open-remote-ssh); the upstream copyright notice
+is retained.

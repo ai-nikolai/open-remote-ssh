@@ -4,7 +4,7 @@ import { RemoteSSHResolver, REMOTE_SSH_AUTHORITY } from './authResolver';
 import { openSSHConfigFile, promptOpenRemoteSSHWindow } from './commands';
 import { HostTreeDataProvider } from './hostTreeView';
 import { getRemoteWorkspaceLocationData, RemoteLocationHistory } from './remoteLocationHistory';
-import { addThisExtensionToArgvJson, getArgvJsonPath, isProposedApiError } from './proposedApi';
+import { allowProposedApi, getProposedApiTarget, isProposedApiError, ProposedApiTargetInfo } from './proposedApi';
 import { getErrorMessage } from './common/errors';
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -63,45 +63,61 @@ export async function activate(context: vscode.ExtensionContext) {
 
 async function enableProposedApi(logger: Log, extensionId: string): Promise<void> {
     try {
-        const result = await addThisExtensionToArgvJson(extensionId);
-        if (result === 'already-enabled') {
-            const restart = await vscode.window.showInformationMessage(
-                `"${extensionId}" is already allowed to use proposed APIs in ${getArgvJsonPath()}. `
-                + 'Restart VSCodium (reloading the window is not enough, argv.json is only read at startup) to activate SSH support.',
-                'Open argv.json'
-            );
-            if (restart) {
-                await vscode.commands.executeCommand('workbench.action.configureRuntimeArguments');
-            }
-            return;
-        }
+        const outcome = await allowProposedApi(extensionId);
+        const message = outcome.status === 'already-enabled'
+            ? `"${extensionId}" is already allowed to use proposed APIs in ${outcome.path}. `
+            : `"${extensionId}" was added to ${outcome.path}. `;
 
-        const restart = await vscode.window.showInformationMessage(
-            `"${extensionId}" was added to ${getArgvJsonPath()}. `
-            + 'Restart VSCodium (reloading the window is not enough, argv.json is only read at startup) to activate SSH support.',
-            'Open argv.json'
+        const action = await vscode.window.showInformationMessage(
+            message
+            + 'Restart the application (the file is only read at startup, reloading the window is not enough) '
+            + 'to activate SSH support.',
+            `Open ${outcome.target}`
         );
-        if (restart) {
-            await vscode.commands.executeCommand('workbench.action.configureRuntimeArguments');
+        if (action) {
+            await openProposedApiTarget(outcome, logger);
         }
     } catch (error) {
-        logger.error(`Failed to update argv.json: ${getErrorMessage(error)}`);
-        const open = await vscode.window.showErrorMessage(
-            `Could not update ${getArgvJsonPath()}: ${getErrorMessage(error)}`,
-            'Open argv.json'
+        logger.error(`Failed to update the proposed API configuration: ${getErrorMessage(error)}`);
+        const action = await vscode.window.showErrorMessage(
+            `Could not allow "${extensionId}" to use proposed APIs: ${getErrorMessage(error)}`,
+            'Open file'
         );
-        if (open) {
-            await vscode.commands.executeCommand('workbench.action.configureRuntimeArguments');
+        if (action) {
+            await openProposedApiTarget(getProposedApiTarget(), logger);
         }
     }
 }
 
+/**
+ * Open the file the proposed-API entry lives in. `argv.json` has a built-in
+ * command (it also offers a template when the file does not exist yet); the
+ * user `product.json` has to be opened directly.
+ */
+async function openProposedApiTarget(info: ProposedApiTargetInfo, logger: Log): Promise<void> {
+    if (info.target === 'argv.json') {
+        await vscode.commands.executeCommand('workbench.action.configureRuntimeArguments');
+        return;
+    }
+
+    try {
+        const document = await vscode.workspace.openTextDocument(vscode.Uri.file(info.path));
+        await vscode.window.showTextDocument(document);
+    } catch (error) {
+        logger.error(`Could not open ${info.path}: ${getErrorMessage(error)}`);
+        await vscode.window.showWarningMessage(
+            `Could not open ${info.path}. Create it with the "Remote-SSH: Enable Proposed API Support" command first.`
+        );
+    }
+}
+
 async function promptEnableProposedApi(logger: Log, extensionId: string): Promise<void> {
-    const add = 'Add to argv.json';
-    const open = 'Open argv.json';
+    const target = getProposedApiTarget();
+    const add = `Add to ${target.target}`;
+    const open = 'Open file';
     const choice = await vscode.window.showErrorMessage(
         'Remote - SSH cannot connect to SSH hosts because the running application does not allow the `resolvers` proposed API. '
-        + `Add "${extensionId}" to "${getArgvJsonPath()}" and restart VSCodium (argv.json is only read at startup). `
+        + `Add "${extensionId}" to "${target.path}" and restart the application (it is only read at startup). `
         + 'The "SSH Targets" view keeps working meanwhile.',
         add,
         open
@@ -110,7 +126,7 @@ async function promptEnableProposedApi(logger: Log, extensionId: string): Promis
     if (choice === add) {
         await enableProposedApi(logger, extensionId);
     } else if (choice === open) {
-        await vscode.commands.executeCommand('workbench.action.configureRuntimeArguments');
+        await openProposedApiTarget(target, logger);
     }
 }
 

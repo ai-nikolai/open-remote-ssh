@@ -6,9 +6,14 @@
   got a data provider. The view and the commands are now registered before the resolver registration
   and a denied proposal is reported instead of breaking the whole extension, which keeps the host
   list usable.
-- feat: new command `Remote-SSH: Enable Proposed API Support` that allow-lists the extension in
-  `argv.json` (`enable-proposed-api`) and offers to open that file. Proposed APIs are only granted to
-  allow-listed extensions in current VS Code/VSCodium builds, so remote connections need this entry.
+- feat: new command `Remote-SSH: Enable Proposed API Support` that allow-lists the extension and
+  offers to open the file it wrote. Proposed APIs are only granted to allow-listed extensions in
+  current VS Code/VSCodium builds, so remote connections need this entry.
+- feat: on VSCodium the command now writes to VSCodium's *user* `product.json`
+  (`extensionEnabledApiProposals`) instead of `argv.json`. VSCodium merges that file over its own
+  product configuration, so the entry survives application updates, needs no re-signing of the
+  application bundle and leaves `argv.json` alone. `argv.json` is still used on VS Code and other
+  forks, which ignore a user `product.json`.
 - fix: `Remote-SSH: Enable Proposed API Support` no longer mistakes a commented out
   `// "enable-proposed-api": [...]` line in `argv.json` for an active entry. The file is parsed
   comment-aware, so the entry is really added and connections work after the restart. Writing is
@@ -17,11 +22,20 @@
   (`context.extension.id`) instead of a hard-coded one.
 - fix: dropped the unused `contribViewsRemote` proposal and the `remoteName` property of the view -
   the view lives in its own activity bar container, so it can be hidden/moved again and needs one
-  proposed API less.
+  proposed API less. The generated declaration for that proposal was removed as well, so `resolvers`
+  is the only proposal this extension declares.
 - fix: an unreadable or malformed SSH configuration is now reported inside the view instead of
   breaking it.
-- docs: README reworked around the `argv.json` step - what the file is, why the proposed API has to
-  be allow-listed, how to do it, and the `--enable-proposed-api` command line alternative.
+- docs: README reworked around the allow-list step - what the two files are, why the proposed API has
+  to be allow-listed, how to do it, and the `--enable-proposed-api` command line alternative. New
+  sections on the relationship to the upstream extension (independent fork, same `ssh-remote`
+  authority, install only one) and on the MIT license.
+- build: the publish workflow no longer carries the upstream repository guard
+  (`github.repository == 'jeanp413/open-remote-ssh'`), which silently skipped publishing for every tag
+  in this fork. The moderation workflows were pointed at this repository as well.
+- build: `license` is declared as MIT in `package.json` (it was shipped in `LICENSE.txt` but missing
+  from the manifest), and the `ssh2` dependency is pinned to the commit the lockfile already uses
+  instead of the moving `#master` branch of the upstream fork.
 - build: fixed the lint setup: removed the obsolete `.eslintignore` (ESLint 9+ ignores it, the same
   paths are configured in `eslint.config.mjs`), replaced the deprecated boolean
   `allowTemplateLiterals` with `"always"`, and dropped `npm audit` from the `lint-staged` pre-commit
